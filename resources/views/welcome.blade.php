@@ -29,6 +29,9 @@
             .window {
                 width: 50%;
             }
+			.graph{
+				width: 100%;
+			}
         </style>
     </head>
     <body>
@@ -38,6 +41,9 @@
 			</div>
 			<div class="modal window">
 				@include('modal')
+			</div>
+			<div class="graph">
+				График
 			</div>
         </div>
     </body>
