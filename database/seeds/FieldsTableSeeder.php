@@ -18,7 +18,7 @@ class FieldsTableSeeder extends Seeder
 			$x = $i + 16;
 			DB::table('fields')->insert([
 				'date' => $date->format("Y-m-d"),
-				'value' => ($i*$i + $i + 2)
+				'value' => ($x*$x + $x + 2)
 			]);
 			$date->modify("+1 day");
 		}
