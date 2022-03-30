@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Fields;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\{FieldCollection, FieldResource};
 
 class FieldController extends Controller
 {
@@ -16,12 +17,28 @@ class FieldController extends Controller
      */
     public function index()
     {
-        return view('welcome',['fields' => Fields::all(),]);
+        return view('welcome',['fields' => new FieldCollection(Fields::all()),]);
+		// в учебных целях поиграться с ресурсами коллекции было довольно интересно, но вообще в данной ситуации такая прокладка совершенно лишняя 
     }
 	
-	
-	
 	// ajax
+	
+
+    /**
+     * Получение карточки поля
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+		$returnHTML = view('modal')->with('field', Fields::findOrFail($id))->render();
+		return response()->json(array('success' => true, 'cart'=>$returnHTML));
+	}
+
+	
+	
+	
 	
     /**
      * Store a newly created resource in storage.
@@ -67,18 +84,6 @@ class FieldController extends Controller
 		
 		$returnHTML = view('products_list')->with('products', Products::all())->render();
 		return response()->json(array('success' => true, 'table'=>$returnHTML));
-	}
-
-    /**
-     * Получение карточки поля
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-		$returnHTML = view('modal')->with('field', Fields::findOrFail($id))->render();
-		return response()->json(array('success' => true, 'cart'=>$returnHTML));
 	}
 
     /**
