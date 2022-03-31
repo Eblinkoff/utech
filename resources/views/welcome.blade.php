@@ -102,102 +102,6 @@
 				root.appendChild(del);
 				th.parentElement.querySelector('.atributes-list').appendChild(root);
 			}
-			function createNewProduct()
-			/** Создаём новый поле
-			*/
-			{
-				$.ajax({
-					url: '/public/products',
-					// dataType : "json",
-					data: $('.new-product-form').serialize(),
-					method : "POST",
-					success: function (rez, textStatus) {
-						document.getElementById('one_half_product').innerHTML = rez.table;
-						deleteAddProduct();
-					},
-					error: function(rezult)
-					{
-						$('.new-product-form .alert-danger').html(rezult.responseJSON.message);
-						$('.new-product-form .alert-danger').show();
-					}
-				});
-				return false;
-			}
-			function createNewEditProduct(id)
-			/** Создаём новый поле
-			* @param int id - id поля в бд
-			*/
-			{
-				$.ajax({
-					url: '/public/products/'+id+'/update',
-					// dataType : "json",
-					data: $('.new-product-form').serialize(),
-					method : "POST",
-					success: function (rez, textStatus) {
-						document.getElementById('one_half_product').innerHTML = rez.table;
-						document.querySelector('.add-product-form-cart').innerHTML = '';
-						$(document.querySelector('.add-product-form-cart')).hide();
-					},
-					error: function(rezult)
-					{
-						$('.new-product-form .alert-danger').html(rezult.responseJSON.message);
-						$('.new-product-form .alert-danger').show();
-					}
-				});
-				return false;
-			}
-			function showEditProductForm(id)
-			/** Показываем карточку редактирования поля
-			* @param int id - id поля в бд
-			*/
-			{
-				$.ajax({
-					url: '/public/products/'+id+'/edit',
-					// dataType : "json",
-					// data: {
-						// id: id,
-					// },
-					method : "GET",
-					success: function (rez, textStatus) {
-						var previousWindow = document.querySelector('.add-product-form-cart');
-						previousWindow.innerHTML = rez.cart;
-						$(previousWindow).show()
-					},
-					error: function(rezult)
-					{
-						$('.new-product-form .alert-danger').html(rezult.responseJSON.message);
-						$('.new-product-form .alert-danger').show();
-					}
-				});
-				return false;
-			}
-			function deleteProduct(id)
-			/** Удаляем поле
-			* @param int id - id поля в бд
-			*/
-			{
-				$.ajax({
-					url: '/public/products/'+id+'/delete',
-					// dataType : "json",
-					// data: {
-						// id: id,
-					// },
-					method : "GET",
-					success: function (rez, textStatus) {
-						var previousWindow = document.querySelector('.add-product-form-cart');
-						previousWindow.innerHTML = '';
-						$(previousWindow).hide();
-						document.getElementById('one_half_product').innerHTML = rez.table;
-					},
-					error: function(rezult)
-					{
-						// var rezult = JSON.parse(rez);
-						$('.new-product-form .alert-danger').html(rezult.responseJSON.message);
-						$('.new-product-form .alert-danger').show();
-					}
-				});
-				return false;
-			}
 			
 			
 			
@@ -222,7 +126,6 @@
 					else
 					{
 						json = JSON.parse(xhr.response);
-						console.log(json)
 						document.querySelector('.modal').innerHTML = json.cart;
 					}
 				}
@@ -234,6 +137,119 @@
 			*/
 			{
 				document.querySelector('.modal').innerHTML = '';
+			}
+			
+			
+			function showEditfieldForm(id)
+			/** Показываем карточку редактирования поля
+			* @param int id - id поля в бд
+			*/
+			{
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "/public/fields/"+id+"/edit");
+				xhr.send();
+				xhr.onload = function() {
+					if (xhr.status != 200)
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+					}
+					else
+					{
+						json = JSON.parse(xhr.response);
+						document.querySelector('.modal').innerHTML = json.cart;
+					}
+				}
+				return false;
+			}
+			function createNewEditField(id)
+			/** Редактируем поле
+			* @param int id - id поля в бд
+			*/
+			{
+				var formSerialized = new FormData(document.querySelector('.new-field-form'));
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/public/fields/"+id+"/update");
+				// xhr.setRequestHeader('Content-Type', 'application/json');
+				xhr.send(formSerialized);
+				xhr.onload = function() {
+					if (xhr.status != 200)
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+					}
+					else
+					{
+						json = JSON.parse(xhr.response);
+						document.querySelector('.list.window').innerHTML = json.table;
+						document.querySelector('.modal').innerHTML = '';
+					}
+				}
+				return false;
+			}
+			function deletefield(id)
+			/** Удаляем поле
+			* @param int id - id поля в бд
+			*/
+			{
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "/public/fields/"+id+"/delete");
+				xhr.send();
+				xhr.onload = function() {
+					if (xhr.status != 200)
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+					}
+					else
+					{
+						json = JSON.parse(xhr.response);
+						document.querySelector('.modal').innerHTML = '';
+						document.querySelector('.list.window').innerHTML = json.table;
+					}
+				}
+				return false;
+			}
+			
+			function showNewFieldForm(id)
+			/** Показываем карточку создания нового поля
+			* @param int id - id поля в бд
+			*/
+			{
+				var xhr = new XMLHttpRequest();
+				xhr.open("GET", "/public/fields/"+id+"/new");
+				xhr.send();
+				xhr.onload = function() {
+					if (xhr.status != 200)
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+					}
+					else
+					{
+						json = JSON.parse(xhr.response);
+						document.querySelector('.modal').innerHTML = json.cart;
+					}
+				}
+				return false;
+			}
+			function createNewField()
+			/** Создаём новое поле
+			*/
+			{
+				var formSerialized = new FormData(document.querySelector('.new-field-form'));
+				var xhr = new XMLHttpRequest();
+				xhr.open("POST", "/public/fields");
+				xhr.send(formSerialized);
+				xhr.onload = function() {
+					if (xhr.status != 200)
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+					}
+					else
+					{
+						json = JSON.parse(xhr.response);
+						document.querySelector('.modal').innerHTML = '';
+						document.querySelector('.list.window').innerHTML = json.table;
+					}
+				}
+				return false;
 			}
 		</script>
     </body>

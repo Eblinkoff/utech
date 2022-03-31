@@ -16,6 +16,7 @@
 	@endforeach
   </tbody>
 </table>
+<button type="button" onclick="showNewFieldForm({{ $field->id }})">Создать новое поле</button>
 @else
 	Ни одного поля нет
 @endif

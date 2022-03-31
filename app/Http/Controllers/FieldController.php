@@ -6,6 +6,7 @@ use App\Fields;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\{FieldCollection, FieldResource};
+use App\Http\Requests\ShowFieldsGet;
 
 class FieldController extends Controller
 {
@@ -30,10 +31,84 @@ class FieldController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
+    // public function show($id)
     public function show($id)
     {
 		$returnHTML = view('modal')->with('field', Fields::findOrFail($id))->render();
 		return response()->json(array('success' => true, 'cart'=>$returnHTML));
+	}
+
+
+    /**
+     * Отдаёт форму создания нового поля
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function new($id)
+    {
+        //
+		$returnHTML = view('cart_new')->with('field', Fields::findOrFail($id))->render();
+		return response()->json(array('success' => true, 'cart'=>$returnHTML));
+    }
+
+
+    /**
+     * Отдаёт форму редактирования поля
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+		$returnHTML = view('cart_edit')->with('field', Fields::findOrFail($id))->render();
+		return response()->json(array('success' => true, 'cart'=>$returnHTML));
+    }
+	
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(ShowFieldsGet $request, $id)
+    {
+		// $this->validate($request, [
+			// 'date' => 'required|date',
+			// 'value' => 'required|integer',
+		// ]);
+		$validatedData = $request->validated();
+		$field = Fields::find($id);
+		$field->date = $request->date;
+		$field->value = $request->value;
+		$field->save();
+		
+		$returnHTML = view('list')->with('fields', Fields::all())->render();
+		return response()->json(array('success' => true, 'table'=>$returnHTML));
+	}
+	
+    // public function show(ShowFieldsGet $request)
+    // {
+		// $validated = $request->validated();
+
+		// $returnHTML = view('modal')->with('field', Fields::findOrFail($request->id))->render();
+		// return response()->json(array('success' => true, 'cart'=>$returnHTML));
+	// }
+
+    /**
+     * Удаляем поле
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $field = Fields::findOrFail($id);
+        $field->delete();
+		$returnHTML = view('list')->with('fields', Fields::all())->render();
+		return response()->json(array('success' => true, 'table'=>$returnHTML));
 	}
 
 	
@@ -46,115 +121,16 @@ class FieldController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(ShowFieldsGet $request)
     {
-		$this->validate($request, [
-			'name' => 'required|min:10',
-			'article' => 'required|alpha_num|unique:products,article',
-		]);
-		// надо ли говорить, что для боевого проекта такой валидации недостаточно, но это тестовое задание и я делаю только то, что в нём есть
-		$product = new Products();
-		$product->name = $request->name;
-		$product->article = $request->article;
-		$product->status = $request->status;
-		// jsonb
-		if($request->data != null)
-		{
-			$json = '';
-			for($i = 0; $i < count($request->data['key']);$i++)
-			{
-				if(isset($request->data['key'][$i]) && $request->data['key'][$i] != '')
-				{
-					$json .= ($i > 0 ? ',' : '').'"'.$request->data['key'][$i].'": "'.$request->data['value'][$i].'"';
-				}
-			}
-			// '{"a": 1}'
-			$product->data = '{'.$json.'}';
-		}
-		else
-		{
-			$product->data = '{}';
-		}
-		$product->save();
+		$validatedData = $request->validated();
+		$field = new Fields();
+		$field->date = $request->date;
+		$field->value = $request->value;
+		$field->save();
 		
-		// теперь ещё отправим письмо
-		$details['email'] = config('products.email');
-
-		dispatch(new SendEmailJob($details));
-		
-		$returnHTML = view('products_list')->with('products', Products::all())->render();
+		$returnHTML = view('list')->with('fields', Fields::all())->render();
 		return response()->json(array('success' => true, 'table'=>$returnHTML));
 	}
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-		$returnHTML = view('products_cart_edit')->with('product', Products::findOrFail($id))->render();
-		return response()->json(array('success' => true, 'cart'=>$returnHTML));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-		$this->validate($request, [
-			'name' => 'required|min:10',
-			'article' => 'required|alpha_num',
-		]);
-		// надо ли говорить, что для боевого проекта такой валидации недостаточно, но это тестовое задание и я делаю только то, что в нём есть
-		$product = Products::find($id);
-		// $product = Products::findOrFail($id);
-		$product->name = $request->name;
-		if(Auth::check() && Auth::user()->id == (int) config('products.role'))
-		{
-			$product->article = $request->article;
-		}
-		$product->status = $request->status;
-		// jsonb
-		if($request->data != null)
-		{
-			$json = '';
-			for($i = 0; $i < count($request->data['key']);$i++)
-			{
-				if(isset($request->data['key'][$i]) && $request->data['key'][$i] != '')
-				{
-					$json .= ($i > 0 ? ',' : '').'"'.$request->data['key'][$i].'": "'.$request->data['value'][$i].'"';
-				}
-			}
-			// '{"a": 1}'
-			$product->data = '{'.$json.'}';
-		}
-		else
-		{
-			$product->data = '{}';
-		}
-		$product->save();
-		$returnHTML = view('products_list')->with('products', Products::all())->render();
-		return response()->json(array('success' => true, 'table'=>$returnHTML));
-	}
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        $product = Products::findOrFail($id);
-        $product->delete();
-		$returnHTML = view('products_list')->with('products', Products::all())->render();
-		return response()->json(array('success' => true, 'table'=>$returnHTML));
-	}
 }
