@@ -67,7 +67,7 @@ class FieldController extends Controller
     }
 	
     /**
-     * Update the specified resource in storage.
+     * Сохранение отредактированного поля
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  int  $id
@@ -79,24 +79,17 @@ class FieldController extends Controller
 			// 'date' => 'required|date',
 			// 'value' => 'required|integer',
 		// ]);
-		$validatedData = $request->validated();
+		$validated = $request->validated();
 		$field = Fields::find($id);
-		$field->date = $request->date;
-		$field->value = $request->value;
+		$field->date = $validated['date'];
+		$field->value = $validated['value'];
 		$field->save();
 		
 		$returnHTML = view('list')->with('fields', Fields::all())->render();
 		return response()->json(array('success' => true, 'table'=>$returnHTML));
 	}
+
 	
-    // public function show(ShowFieldsGet $request)
-    // {
-		// $validated = $request->validated();
-
-		// $returnHTML = view('modal')->with('field', Fields::findOrFail($request->id))->render();
-		// return response()->json(array('success' => true, 'cart'=>$returnHTML));
-	// }
-
     /**
      * Удаляем поле
      *
@@ -116,7 +109,7 @@ class FieldController extends Controller
 	
 	
     /**
-     * Store a newly created resource in storage.
+     * Создаём новое поле
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -125,8 +118,8 @@ class FieldController extends Controller
     {
 		$validatedData = $request->validated();
 		$field = new Fields();
-		$field->date = $request->date;
-		$field->value = $request->value;
+		$field->date = $validatedData['date'];
+		$field->value = $validatedData['value'];
 		$field->save();
 		
 		$returnHTML = view('list')->with('fields', Fields::all())->render();

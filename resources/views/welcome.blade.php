@@ -43,6 +43,9 @@
 				min-height:400px;
 				width:100%;
 			}
+			.alert-danger{
+				color: red;
+			}
         </style>
     </head>
     <body>
@@ -90,10 +93,10 @@
 				
 				// Set labels
 				// d.setLabels(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
-				d.setLabels(dat);
+				d.setLabels(val);
 
 				// Set legends and values
-				d.addLegend({"name": "График изменения значений", "stroke": "#CDDC39", "fill": "#fff", "values": val});
+				d.addLegend({"name": "График изменения значений", "stroke": "#CDDC39", "fill": "#fff", "values": dat});
 				// d.addLegend({"name": "Night", "stroke": "#3b95f7", "fill": "#fff", "values": [200, 150, 240, 180, 150, 240, 230, 300, 200, 150, 270, 200]});
 
 				d.inject(document.getElementById("my-chart"));
@@ -110,6 +113,7 @@
 			{
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET", "/public/fields/"+id);
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send();
 				xhr.onload = function() {
 					if (xhr.status != 200)
@@ -140,6 +144,7 @@
 			{
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET", "/public/fields/"+id+"/edit");
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send();
 				xhr.onload = function() {
 					if (xhr.status != 200)
@@ -162,19 +167,30 @@
 				var formSerialized = new FormData(document.querySelector('.new-field-form'));
 				var xhr = new XMLHttpRequest();
 				xhr.open("POST", "/public/fields/"+id+"/update");
-				// xhr.setRequestHeader('Content-Type', 'application/json');
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send(formSerialized);
 				xhr.onload = function() {
-					if (xhr.status != 200)
+					if (xhr.status == 422)
+					// ошибка валидации
 					{
-						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+						json = JSON.parse(xhr.response);
+						var error = document.querySelector('.alert.alert-danger');
+						if(error)
+						{
+							error.innerHTML = json.message;
+							error.style.display = 'block';
+						}
 					}
-					else
+					else if (xhr.status == 200)
 					{
 						json = JSON.parse(xhr.response);
 						document.querySelector('.list.window').innerHTML = json.table;
 						document.querySelector('.modal').innerHTML = '';
 						showChart();
+					}
+					else
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
 					}
 				}
 				return false;
@@ -186,6 +202,7 @@
 			{
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET", "/public/fields/"+id+"/delete");
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send();
 				xhr.onload = function() {
 					if (xhr.status != 200)
@@ -210,6 +227,7 @@
 			{
 				var xhr = new XMLHttpRequest();
 				xhr.open("GET", "/public/fields/"+id+"/new");
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send();
 				xhr.onload = function() {
 					if (xhr.status != 200)
@@ -231,18 +249,30 @@
 				var formSerialized = new FormData(document.querySelector('.new-field-form'));
 				var xhr = new XMLHttpRequest();
 				xhr.open("POST", "/public/fields");
+				xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 				xhr.send(formSerialized);
 				xhr.onload = function() {
-					if (xhr.status != 200)
+					if (xhr.status == 422)
+					// ошибка валидации
 					{
-						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
+						json = JSON.parse(xhr.response);
+						var error = document.querySelector('.alert.alert-danger');
+						if(error)
+						{
+							error.innerHTML = json.message;
+							error.style.display = 'block';
+						}
 					}
-					else
+					else if (xhr.status == 200)
 					{
 						json = JSON.parse(xhr.response);
 						document.querySelector('.modal').innerHTML = '';
 						document.querySelector('.list.window').innerHTML = json.table;
 						showChart();
+					}
+					else
+					{
+						console.log("Ошибка "+xhr.status+": "+xhr.statusText);
 					}
 				}
 				return false;
