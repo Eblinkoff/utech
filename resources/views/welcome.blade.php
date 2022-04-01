@@ -9,6 +9,7 @@
 
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Raleway:100,600" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="/public/js/liteChart.min.js"></script>
 
         <!-- Styles -->
         <style>
@@ -38,6 +39,10 @@
 			.my-show-table{
 				text-align: left;
 			}
+			.chart {
+				min-height:400px;
+				width:100%;
+			}
         </style>
     </head>
     <body>
@@ -50,64 +55,52 @@
         </div>
 		<div class="graph">
 			График
+			<div id="my-chart" width="400" height="400"></div>
 		</div>
 		<script>
-			function addProduct()
-			/** Показываем форму создания нового продукта
+			document.addEventListener("DOMContentLoaded", function(){
+				// chart
+				showChart();
+			});
+			
+			
+			function showChart()
+			/** Отрисовываем график заново
+			* @param int id - id поля в бд
 			*/
 			{
-				$('.add-product-form').show();
-			}
-			function deleteAddProduct()
-			/** Скрываем форму создания нового продукта
-			*/
-			{
-				$('.add-product-form').hide();
-			}
-			function deleteattribute(th)
-			/** Удаляем формочку создания нового атрибута
-			* @param  obj th - this - элемент с крестом
-			*/
-			{
-				$(th.parentElement).remove();
-			}
-			function addAtributForm(th)
-			/** Добавляем форму создания нового атрибута
-			*/
-			{
-				// var form = '<div class="one-atrtr form-group">\
-						// <input type="text" placeholder="Ключ" name="attr[key][]">\
-						// <input type="text" placeholder="Значение" name="attr[value][]">\
-						// <span class="delete-attr" onclick="deleteattribute(this)">X</span>\
-					// </div>';
-				var root = document.createElement('DIV');
-				root.className = 'one-atrtr form-group';
+				document.getElementById('my-chart').innerHTML = '';
+				// Готовим данные
+				var dates = document.querySelectorAll('.my-table th[scope="row"]');
+				var dat = [];
+				for(var i = 0; i < dates.length;i++)
+				{
+					var arr = dates[i].innerHTML.split('-');
+					dat[i] = arr[2];// только числа
+				}
+
+				var values = document.querySelectorAll('.my-table td');
+				var val = [];
+				for(var i = 0; i < values.length;i++)
+				{
+					val[i] = values[i].innerHTML;
+				}
+				// Create liteChart.js Object
+				var d = new liteChart("chart", {});
 				
-				var key = document.createElement('INPUT');
-				key.type = 'text';
-				key.placeholder = 'Ключ';
-				key.name = 'data[key][]';
-				root.appendChild(key);
-				
-				var value = document.createElement('INPUT');
-				value.type = 'text';
-				value.placeholder = 'Значение';
-				value.name = 'data[value][]';
-				root.appendChild(value);
-				
-				var del = document.createElement('SPAN');
-				del.className = 'delete-attr';
-				del.setAttribute('onclick', 'deleteattribute(this)');
-				del.innerHTML = 'X';
-				root.appendChild(del);
-				th.parentElement.querySelector('.atributes-list').appendChild(root);
+				// Set labels
+				// d.setLabels(["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]);
+				d.setLabels(dat);
+
+				// Set legends and values
+				d.addLegend({"name": "График изменения значений", "stroke": "#CDDC39", "fill": "#fff", "values": val});
+				// d.addLegend({"name": "Night", "stroke": "#3b95f7", "fill": "#fff", "values": [200, 150, 240, 180, 150, 240, 230, 300, 200, 150, 270, 200]});
+
+				d.inject(document.getElementById("my-chart"));
+
+				// Draw
+				d.draw();
 			}
-			
-			
-			
-			
-			
-			
 			
 			
 			function showProductCart(id)
@@ -181,6 +174,7 @@
 						json = JSON.parse(xhr.response);
 						document.querySelector('.list.window').innerHTML = json.table;
 						document.querySelector('.modal').innerHTML = '';
+						showChart();
 					}
 				}
 				return false;
@@ -203,6 +197,7 @@
 						json = JSON.parse(xhr.response);
 						document.querySelector('.modal').innerHTML = '';
 						document.querySelector('.list.window').innerHTML = json.table;
+						showChart();
 					}
 				}
 				return false;
@@ -247,6 +242,7 @@
 						json = JSON.parse(xhr.response);
 						document.querySelector('.modal').innerHTML = '';
 						document.querySelector('.list.window').innerHTML = json.table;
+						showChart();
 					}
 				}
 				return false;
